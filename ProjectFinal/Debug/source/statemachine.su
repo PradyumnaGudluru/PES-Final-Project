@@ -1,0 +1,2 @@
+statemachine.c:275:5:CmdAuth	16	static
+statemachine.c:311:6:state_color	32	static

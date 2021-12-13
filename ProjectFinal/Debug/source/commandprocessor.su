@@ -1,0 +1,8 @@
+commandprocessor.c:52:6:lexical_analysis	272	static
+commandprocessor.c:124:13:author_command_handler	16	static
+commandprocessor.c:135:13:help_command_handler	32	static
+commandprocessor.c:152:13:unknown_command_handler	16	static
+commandprocessor.c:171:13:display_command_handler	32	static
+commandprocessor.c:189:6:set_reference_angle	16	static
+commandprocessor.c:202:13:initiate_command_handler	16	static
+commandprocessor.c:217:13:calibrate_command_handler	24	static

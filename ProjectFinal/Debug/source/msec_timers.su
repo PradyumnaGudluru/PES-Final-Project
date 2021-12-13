@@ -1,0 +1,8 @@
+core_cm0plus.h:804:22:NVIC_SetPriority	24	static
+msec_timers.c:24:19:time_msec	8	static
+msec_timers.c:35:6:init_systick	8	static
+msec_timers.c:62:6:reset_timer	8	static
+msec_timers.c:73:12:now	8	static
+msec_timers.c:84:12:get_timer	8	static
+msec_timers.c:95:6:SysTick_Handler	8	static
+msec_timers.c:106:6:delay_ms	24	static

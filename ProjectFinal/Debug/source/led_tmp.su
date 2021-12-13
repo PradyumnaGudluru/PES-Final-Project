@@ -1,0 +1,11 @@
+led_tmp.c:69:6:init_led_pwm	8	static
+led_tmp.c:86:6:init_tpm	8	static
+led_tmp.c:107:13:init_tpm0	16	static
+led_tmp.c:134:13:init_tpm2	16	static
+led_tmp.c:167:6:rgb_pwm_controller	24	static
+led_tmp.c:180:13:init_led	16	static
+led_tmp.c:221:6:red_led_on	8	static
+led_tmp.c:235:6:green_led_on	8	static
+led_tmp.c:249:6:blue_led_on	8	static
+led_tmp.c:263:6:all_led_on	8	static
+led_tmp.c:276:6:all_led_off	8	static

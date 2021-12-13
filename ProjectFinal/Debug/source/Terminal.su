@@ -1,0 +1,4 @@
+Terminal.c:19:6:author	16	static
+Terminal.c:39:6:unknown	16	static
+Terminal.c:47:6:help	16	static
+Terminal.c:73:7:lexical_cmdprocess	3064	static

@@ -1,0 +1,2 @@
+cbfifo_testcase.c:41:13:test_cbfifo_one_iteration	2048	static
+cbfifo_testcase.c:266:6:test_cbfifo	8	static
