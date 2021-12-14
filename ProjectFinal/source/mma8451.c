@@ -81,7 +81,6 @@ void read_full_xyz(acclerometer_parameters_t *accl_param)
  */
 void convert_xyz_to_roll_pitch(acclerometer_parameters_t *accl_param,uint8_t update_ref)
 {
-	//static int count = 0;
 	float ax = (accl_param->x)/COUNTS_PER_G;
 	float ay = (accl_param->y)/COUNTS_PER_G;
 	float az = (accl_param->z)/COUNTS_PER_G;

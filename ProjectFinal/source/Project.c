@@ -85,7 +85,7 @@ int main(void)
 	system_init();
 
 	/* test the modules */
-	//test_modules();
+	test_modules();
 
 	/* Calling the headlamp application */
 	app();

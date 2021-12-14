@@ -53,8 +53,6 @@ int cbfifo_full(CB_t *cbfifo);
  * 			   2) Lecture Slides of Howdy Pierce
  */
 
-#ifndef FIFO_H_
-#define FIFO_H_
 
 #include <string.h>
 #include <stdbool.h>
@@ -63,15 +61,6 @@ int cbfifo_full(CB_t *cbfifo);
 #include <assert.h>
 
 #define STRIDE 256
-
-/*typedef struct
-{
-	int Tail;
-	int Head;
-	size_t size;
-	bool isFullflag;
-	uint8_t Data[256];
-} fifo_T;*/
 
 typedef struct {
 	size_t cb_data[STRIDE];
@@ -95,13 +84,11 @@ void cbfifo_init(cb_fifo_t * f);
 
 bool cbfifo_full(cb_fifo_t * f);
 
-
+size_t cbfifo_capacity(cb_fifo_t * cb_fifo);
 
 int cbfifo_size(cb_fifo_t * f);
 
-
-#endif /* FIFO_H_ */
-
+size_t cbfifo_length(cb_fifo_t * cb_fifo);
 
 
 #endif /* CBFIFO_H_ */

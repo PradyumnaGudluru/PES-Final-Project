@@ -10,11 +10,14 @@
 
 #define SWITCH_GPIO_PORT 						GPIOD
 #define SWITCH_PIN								3
+#define SWITCH_PIN_OFF							4
 #define SWITCH_PIN_CTRL_REG						PORTD->PCR[SWITCH_PIN] /* PORTD PCR 3*/
 #define SWITCH_SCGC5_MASK						SIM_SCGC5_PORTD_MASK
 #define SWITCH_DATA_DIR_REG 					SWITCH_GPIO_PORT->PDDR
 #define SWITCH_DATA_IN_REG						SWITCH_GPIO_PORT->PDIR
 #define SWITCH_IFSR_REG							PORTD->ISFR
+
+#define MASK(x) (1UL << (x))
 
 uint8_t switch_press_detected;
 
@@ -41,10 +44,15 @@ void init_switch()
 	SWITCH_PIN_CTRL_REG |= PORT_PCR_PE(1) | PORT_PCR_PS(1);
 
 	/* Enable the interrupt on any edge */
-	SWITCH_PIN_CTRL_REG |= PORT_PCR_IRQC(11);
+	SWITCH_PIN_CTRL_REG |= PORT_PCR_IRQC(10);
 
 	/* Set direction to input */
 	SWITCH_DATA_DIR_REG &= ~(1 << SWITCH_PIN);
+
+	/*Select GPIO and enable pull-up resistors and interrupts on falling edge*/
+	PORTD->PCR[SWITCH_PIN_OFF] = PORT_PCR_MUX(1) | PORT_PCR_PS_MASK | PORT_PCR_PE_MASK | PORT_PCR_IRQC(10);
+	/*Make pin input*/
+	PTD->PDDR &= ~MASK(SWITCH_PIN_OFF);
 
 	/* Set the priroity of switch */
 	NVIC_EnableIRQ(PORTD_IRQn);
@@ -69,6 +77,11 @@ void PORTD_IRQHandler(void)
 		{
 			switch_press_detected = 1;
 		}
+	}
+
+	else if((SWITCH_IFSR_REG & (1 << SWITCH_PIN_OFF))){
+		while_running = 0;
+		rgb_pwm_controller(0,0,0);
 	}
 
 	switch_cmd_process();

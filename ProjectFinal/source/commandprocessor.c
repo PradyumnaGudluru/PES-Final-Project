@@ -38,8 +38,8 @@ static const command_table_t commands[] =
 	{"author"  ,author_command_handler     ,"Print the author\r\n	 <no parameters>"									},
 	{"display" ,display_command_handler    ,"Print the roll and pitch values\r\n	 <no parameters>"					    },
 	{"help"	   ,help_command_handler	   ,"Print this help message\r\n	 <no parameters>"							},
-	{"initiate"	   ,initiate_command_handler	   ,"initiates the process\r\n	 <no parameters>"							},
-	{"calibrate"	,calibrate_command_handler	   ,"calibrates the angle roll and pitch\r\n	 <no parameters>"		},
+	{"init"	   ,initiate_command_handler	   ,"initiates the process\r\n	 <no parameters>"							},
+	{"calib"	,calibrate_command_handler	   ,"calibrates the angle roll and pitch\r\n	 <no parameters>"		},
 };
 
 /**
@@ -136,11 +136,26 @@ static void help_command_handler(const char *datareceived)
 {
 	printf("\r\nHeadLamp Beam Assistance Feature options: \r\nOptions available \r\n");
 
-	for(uint8_t cmdlen = 0; cmdlen < NO_OF_COMMANDS; cmdlen++)
+	/*for(uint8_t cmdlen = 0; cmdlen < NO_OF_COMMANDS; cmdlen++)
 	{
 		printf("%s\r\n\t %s\r\n",commands[cmdlen].commandname,
 							commands[cmdlen].commandparameters);
-	}
+	}*/
+
+	printf("Author : Display Name of Author \n\r");
+	printf("\n\r");
+
+	printf("Display : Print the roll and pitch values\r\n");
+	printf("\n\r");
+
+	printf("Help : Displays available commands\n\r");
+	printf("\n\r");
+
+	printf("init : initiates the process\n\r");
+	printf("\n\r");
+
+	printf("calib : calibrates the angle roll and pitch\n\r");
+	printf("\n\r");
 }
 
 /**
