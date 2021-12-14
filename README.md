@@ -3,7 +3,6 @@ PES-Final-Project for PES, ECEN-5813, Fall-2021.
 
 ## Table of Contents
 * [Description](#description)
-* [Screenshots](#screenshots)
 * [Build](#build)
 * [Author](#author)
 
@@ -25,10 +24,15 @@ the direction of the vehicle and the colour to be updated, the conditional table
 #### Design Information:
 
 Command-Position-Color Table:
+![Command-Position-Color Table](https://github.com/PradyumnaGudluru/PES-Final-Project/blob/main/ProjectFinal/files/Design_Info_Table.PNG)
+
+THRESHOLD : 35(degrees). 
 
 Command Authentication function flow chart:
+![Function Flow Chart](https://github.com/PradyumnaGudluru/PES-Final-Project/blob/main/ProjectFinal/files/Design_Info_Flow_Chart.png)
 
 State Machine for color determination:
+![State Machine](https://github.com/PradyumnaGudluru/PES-Final-Project/blob/main/ProjectFinal/files/Design_Info_State_Machine.png)
 
 #### File Information :
 
@@ -61,7 +65,7 @@ Stop bits : 2 bit
 
 1) CBFIFO tested using automated tests (as per the test cases given by Howdy Pierce)
 2) Manual testing done as per the testcase_sheet functionality.
-	Testcase Sheet : 
+	Testcase Sheet : https://github.com/PradyumnaGudluru/PES-Final-Project/blob/main/ProjectFinal/files/Testcase_Sheet.xlsx
 3) The testing procedure as per the following video:
 	a) Run the project on MCUXpresso
 	b) help - command information visible
@@ -72,8 +76,11 @@ Stop bits : 2 bit
 	g) Initiating the feature ON by using GPIO port D PIN 3 interrupt (Switch 1).
 	h) By pressing the Switch 1, printing the roll and pitch values.
 	
-	Video :
+	Video : https://drive.google.com/file/d/1BtZKkdK8tYoAmR4jaVgACcY08QV5nCG0/view?usp=sharing
 
+#### Project Proposal :
+	https://github.com/PradyumnaGudluru/PES-Final-Project/blob/main/ProjectFinal/files/PES_CourseProject_Proposal.pdf
+	
 #### References:
 1)	Lecture slides of Howdy Pierce.
 2)	https://github.com/alexander-g-dean/ESF/tree/master/NXP/
@@ -82,22 +89,8 @@ Stop bits : 2 bit
 5) MMA8451Q datasheet
 6) KL25Z manual/ datasheet
 
-URL: https://github.com/PradyumnaGudluru/PES-Assignment-7
+URL: https://github.com/PradyumnaGudluru/PES-Final-Project
   
-## Screenshots
-The screenshots for the required frequencies are 
-1) 440Hz (A4)
-![440Hz (A4)](https://github.com/PradyumnaGudluru/PES-Assignment-7/blob/main/Assignment_7/Screenshots/441Hz.png)
-
-2) 587Hz (D5)
-![587Hz (D5)](https://github.com/PradyumnaGudluru/PES-Assignment-7/blob/main/Assignment_7/Screenshots/588Hz.png)
-
-3) 659Hz (E5)
-![659Hz (E5)](https://github.com/PradyumnaGudluru/PES-Assignment-7/blob/main/Assignment_7/Screenshots/658Hz.png)
-
-4) 880Hz (A5)
-![880Hz (A5)](https://github.com/PradyumnaGudluru/PES-Assignment-7/blob/main/Assignment_7/Screenshots/880Hz.png)
-
 ## Build
 * The compilation steps are as follows:
 1.	Launch MCUXpresso_IDEv11.2.0
