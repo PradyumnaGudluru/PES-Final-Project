@@ -45,33 +45,27 @@
 #include "uart.h"
 #include "cbfifo.h"
 #include "commandprocessor.h"
-#include "msec_timers.h"
+#include "systick_timers.h"
 #include "switch.h"
-#include "touch_slider.h"
 #include "led_tmp.h"
 #include "i2c.h"
 #include "mma8451.h"
 #include "statemachine.h"
 #include "commandprocessor.h"
-#include "testmodules.h"
+#include "cbfifo_testcase.h"
 /* TODO: insert other include files here. */
 
 /* TODO: insert other definitions and declarations here. */
 
 
-#define	ACCUM_BUFF_SIZE						50
+#define	LOADVAL_BUFF_SIZE						50
 #define ERROR								-1
 
-//static eDigitalAngleGaugeState current_state;
 
 int while_running = 0;
 
 static void system_init();
 static void app();
-void digital_angle_gauge_state_machine();
-//void state_change_detector(eDigitalAngleGaugeState current_state,eDigitalAngleGaugeState new_state);
-
-
 
 /*
 * @prototype:  main
@@ -119,9 +113,6 @@ static void system_init()
 	/* switch init */
 	init_switch();
 
-	/* TSI init */
-	init_touchsensor();
-
 	/* I2C module init */
 	init_i2c();
 
@@ -136,7 +127,7 @@ static void system_init()
 	}
 
 	printf("Headlamp_Assistance Feature!\r\n");
-	printf("Press HELP for details\r\n");
+
 	reset_timer();
 }
 
@@ -149,17 +140,14 @@ static void system_init()
 static void app()
 {
 
-	int8_t ch1;
+	int8_t ch;
 	bool firstbackspace = true;
-	uint8_t accumulate[ACCUM_BUFF_SIZE];
+	uint8_t loadval[LOADVAL_BUFF_SIZE];
 
-	memset(accumulate,'\0',sizeof(accumulate));
-	uint8_t *bufptr = accumulate;
+	memset(loadval,'\0',sizeof(loadval));
+	uint8_t *val = loadval;
 
-	//printf("Please finalize your ground reference to 0 by trying to align FRDM parallel to ground\r\n");
-	//printf("Once aligned the LED will change to green and then go off!\r\n");
-
-	//current_state = INIT_STATE;
+	printf("Press HELP for details\r\n");
 
 	while(1)
 	{
@@ -169,16 +157,16 @@ static void app()
 
 		while(1)
 		{
-			ch1 = getchar();
+			ch = getchar();
 
-			if(ch1 != ERROR)
+			if(ch != ERROR)
 			{
-				putchar(ch1);
+				putchar(ch);
 
-				if(ch1 != 0x08)
+				if(ch != 0x08)
 				{
 					firstbackspace = false;
-					*bufptr++ = ch1;
+					*val++ = ch;
 				}
 				else
 				{
@@ -186,7 +174,7 @@ static void app()
 					if(firstbackspace == false)
 					{
 						printf(" \b");
-						*bufptr-- = ch1;
+						*val-- = ch;
 					}
 					else
 					{
@@ -194,156 +182,28 @@ static void app()
 					}
 				}
 
-				if(ch1 == '\r')
+				if(ch == '\r')
 				{
-					*bufptr++ = '\n';
-					*bufptr++ = '\0';
-					bufptr = &accumulate[0];
-					ch1 = -1;
+					*val++ = '\n';
+					*val++ = '\0';
+					val = &loadval[0];
+					ch = -1;
 					break;
 				}
 			}
 
-			/* start scanning for touch sensor
-			 * detection
-			start_touch_scanning();*/
 
 			/* Enters the state machine only when initiated by switch or command line */
 			if(while_running == 1)
 			state_color();
 		}
 
-		bufptr = &accumulate[0];
+		val = &loadval[0];
 
 		/* Lexical analysis for the command */
-		lexical_analysis(accumulate);
+		lexical_analysis(loadval);
 
 
 	}
 
 }
-
-
-
-#if 0
-/*******************************************************************************
-* @Function name: traffic_light_state
-* @Description: main code which handles all the state transactions
-* @input param: none
-* @return: none
-* @references: elevator.c examples
-*******************************************************************************/
-void digital_angle_gauge_state_machine()
-{
-	eDigitalAngleGaugeState new_state;
-
-	new_state = current_state;
-
-	switch (current_state)
-	{
-		case INIT_STATE:
-			new_state = handle_calibrate_to_zero();
-			break;
-
-		case CALIBRATE_STATE:
-			new_state = handle_calibrate_state();
-			break;
-
-		case ANGLE_DISPLAY_STATE:
-			new_state = handle_angle_gauge_state();
-			break;
-
-		default:
-			break;
-	}
-
-	if (new_state != current_state)
-	{
-		/* Only when a new state is detected */
-		state_change_detector(current_state,new_state);
-
-		current_state = new_state;
-	}
-}
-
-/*******************************************************************************
-* @Function name: state_change_detector
-* @Description: Logs the sequence of states in which the state machine is executed
-* @input param 1: current state of the machine
-* @input param 2: current state of the machine
-* @return: none
-* @references: elevator.c examples
-*******************************************************************************/
-void state_change_detector(eDigitalAngleGaugeState current_state,eDigitalAngleGaugeState new_state)
-{
-	char buf[300];
-	uint8_t calibreate = 0;
-	uint8_t angle_display = 0;
-
-	const char *current_str;
-	const char *next_str;
-
-	/* executing through below sequence to track
-	 *  the state machine flow */
-	switch(current_state)
-	{
-		case INIT_STATE:
-		{
-			current_str = "INIT_STATE";
-			break;
-		}
-		case CALIBRATE_STATE:
-		{
-			current_str = "CALIBRATE_STATE";
-			break;
-		}
-		case ANGLE_DISPLAY_STATE:
-		{
-			current_str = "ANGLE_DISPLAY_STATE";
-			break;
-		}
-	}
-
-	switch (new_state)
-	{
-		case INIT_STATE:
-		{
-			next_str = "INIT_STATE";
-			break;
-		}
-		case CALIBRATE_STATE:
-		{
-			calibreate = 1;
-			next_str = "CALIBRATE_STATE";
-			break;
-		}
-		case ANGLE_DISPLAY_STATE:
-		{
-			angle_display = 1;
-			next_str = "ANGLE_DISPLAY_STATE";
-			break;
-		}
-	}
-
-	snprintf(buf,sizeof(buf),"CS::%s, NS::%s\r\n",current_str, next_str);
-	printf(buf);
-
-	if(calibreate == 1)
-	{
-		printf("Press touch slider to set new reference!\r\n");
-	}
-
-	if(angle_display == 1)
-	{
-		printf("Roll FRDM to detect 30,45,60,90 degree angle\r\n");
-		printf("Press button between PTD3 and ground to reset the reference level\r\n");
-	}
-
-	calibreate = 0;
-	angle_display = 0;
-
-}
-
-#endif
-
-

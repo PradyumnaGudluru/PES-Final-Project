@@ -3,6 +3,8 @@
  *
  *  Created on: 12-Dec-2021
  *      Author: Pradyumna
+ *  @brief  Has the code for Command processing of terminal interface commands and lexical analysis.
+ *  @References 1) Lecture slides of Howdy Pierce
  */
 
 #ifndef COMMANDPROCESSOR_H_
@@ -17,6 +19,5 @@
 
 void acceptinput();
 void lexical_analysis(uint8_t *cmdProessor);
-void set_reference_angle(int ref_rcvd );
 
 #endif /* COMMANDPROCESSOR_H_ */

@@ -8,23 +8,19 @@
  * 			   2) https://github.com/alexander-g-dean/ESF/tree/master/NXP/Misc/Touch%20Sense/TSI/src
  */
 
+/* Header File*/
 #include "uart.h"
 
-#define UART_OVERSAMPLE_RATE 						(16)
-#define BAUD_RATE									(38400)		/* sets the baud rate */
-#define STOP_BIT									(1)			/* Ensures 2 stop bits */
-#define PARITY										(0)			/* No parity */
-#define DATA_SIZE									(0)			/* Data size is 8 */
+/* MACRO DEFS*/
+#define SAMPLE_RATE_UART 						(16)
+#define BAUD_RATE								(38400)				/* Baud as per the requirement */
+#define STOP_BIT								(1)					/* 2 stop bits selected */
+#define PARITY_COUNT							(0)					/* No parity */
+#define DATA_SIZE								(0)					/* size of data*/
 
+/* Variable Declaration*/
 cb_fifo_t CB_TX_FIFO, CB_RX_FIFO;
 
-/* BEGIN - UART0 Device Driver
-	Code created by Shannon Strutz
-	Date : 5/7/2014
-	Licensed under CC BY-NC-SA 3.0
-	http://creativecommons.org/licenses/by-nc-sa/3.0/
-	Modified by Alex Dean 9/13/2016
-*/
 /**
  * @prototype : __sys_write(int handle, char *buf, int size)
  * @brief : sys write functionality - enqueues data from UART
@@ -38,7 +34,7 @@ int __sys_write(int handle, char *buf, int size)
 		return -1;
 	}
 
-	/* Check for the queue to be empty */
+	/* Queue empty check */
 	while(cbfifo_full(&CB_TX_FIFO))
 	{
 		;
@@ -46,7 +42,7 @@ int __sys_write(int handle, char *buf, int size)
 
 	cbfifo_enqueue(&CB_TX_FIFO,buf,size);
 
-	/* enable the transmit interrupt */
+	/* Enabling INT  */
 	if(!(UART0->C2 & UART0_C2_TIE_MASK))
 	{
 		UART0->C2 |= UART0_C2_TIE(1);
@@ -65,7 +61,7 @@ int __sys_readc(void)
 {
 	char data_byte;
 
-	/* dequeue one byte at a time */
+	/* Initiate dequeue */
 	if(cbfifo_dequeue(&CB_RX_FIFO,&data_byte,1) != 1)
 	{
 		return -1;
@@ -102,17 +98,17 @@ void init_UART0()
 	PORTA->PCR[2] = PORT_PCR_ISF_MASK | PORT_PCR_MUX(2); // Tx
 
 	/* Set baud rate and over-sampling ratio */
-	sbr = (uint16_t)((SYSCLOCK_FREQUENCY)/(BAUD_RATE * UART_OVERSAMPLE_RATE));
+	sbr = (uint16_t)((SYSCLOCK_FREQUENCY)/(BAUD_RATE * SAMPLE_RATE_UART));
 	UART0->BDH &= ~UART0_BDH_SBR_MASK;
 	UART0->BDH |= UART0_BDH_SBR(sbr>>8);
 	UART0->BDL = UART0_BDL_SBR(sbr);
-	UART0->C4 |= UART0_C4_OSR(UART_OVERSAMPLE_RATE-1);
+	UART0->C4 |= UART0_C4_OSR(SAMPLE_RATE_UART-1);
 
 	/* select two stop bit */
 	UART0->BDH |= UART0_BDH_RXEDGIE(0) | UART0_BDH_SBNS(STOP_BIT) | UART0_BDH_LBKDIE(0);
 
 	/* Don't enable loopback mode, use 8 data bit mode, don't use parity */
-	UART0->C1 = UART0_C1_LOOPS(0) | UART0_C1_M(DATA_SIZE) | UART0_C1_PE(PARITY) | UART0_C1_PT(0);
+	UART0->C1 = UART0_C1_LOOPS(0) | UART0_C1_M(DATA_SIZE) | UART0_C1_PE(PARITY_COUNT) | UART0_C1_PT(0);
 
 	/* Don't invert transmit data, don't enable interrupts for errors */
 	UART0->C3 = UART0_C3_TXINV(0) | UART0_C3_ORIE(0)| UART0_C3_NEIE(0)
@@ -139,13 +135,6 @@ void init_UART0()
 
 }
 
-/* END - UART0 Device Driver
-	Code created by Shannon Strutz
-	Date : 5/7/2014
-	Licensed under CC BY-NC-SA 3.0
-	http://creativecommons.org/licenses/by-nc-sa/3.0/
-	Modified by Alex Dean 9/13/2016
-*/
 /**
  * @prototype    UART0_IRQHandler()
  * @brief   This function gets the Interrupt Request at the time of UART serial input or output to be printed to the terminal.
@@ -193,40 +182,4 @@ void UART0_IRQHandler(void)
 	}
 }
 
-void Terminal()
-{
 
-	char loadval[640];
-	char* val = &loadval[0];
-
-	uint8_t char_in;
-	while(char_in != 0x0D){
-		while (cbfifo_size(&CB_RX_FIFO) == 0);
-		cbfifo_dequeue(&CB_RX_FIFO, &char_in, 1);
-		putchar(char_in);
-		if (char_in != 0x0D || char_in != 0x0A){
-			if(char_in != 0x08){
-				*val = (char)char_in;
-				val++;
-			}
-			else{
-				printf(" \b");
-				val--;
-
-			}
-		}
-
-		if (!(UART0->C2 & UART0_C2_TIE_MASK)){
-			UART0->C2 |= UART0_C2_TIE(1);
-		}
-		if(char_in == '\r'){
-			char_in = 0x0A;
-			printf("\r\n");
-			break;
-		}
-
-	}
-	*val = '\0';
-
-	lexical_cmdprocess(loadval);
-}

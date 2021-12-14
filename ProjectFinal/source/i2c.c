@@ -3,12 +3,16 @@
  *
  *  Created on: 12-Dec-2021
  *      Author: Pradyumna
+ *  @brief  Has the code for basic functionality of I2C with read and write functions.
+ *  @References 1) Lecture slides of Howdy Pierce
+ *  			2) https://github.com/alexander-g-dean/ESF/tree/master/NXP
  */
 
-
+/* Header File*/
 #include <MKL25Z4.H>
 #include "i2c.h"
 
+/*MACRO DEFS*/
 #define I2C_M_START 						I2C0->C1 |= I2C_C1_MST_MASK
 #define I2C_M_STOP  						I2C0->C1 &= ~I2C_C1_MST_MASK
 #define I2C_M_RSTART 						I2C0->C1 |= I2C_C1_RSTA_MASK
@@ -29,6 +33,7 @@
 #define RESET								0
 #define SET									1
 
+/*Variable*/
 int g_lock_detect = 0;
 
 /**

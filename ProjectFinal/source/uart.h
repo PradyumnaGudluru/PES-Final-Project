@@ -16,7 +16,6 @@
 #include <stdio.h>
 #include "cbfifo.h"
 #include "sysclock.h"
-#include "Terminal.h"
 
 void init_UART0();
 int __sys_write(int handle, char *buf, int size);

@@ -3,27 +3,24 @@
  *
  *  Created on: 12-Dec-2021
  *      Author: Pradyumna
+ *   @brief  Has the code for basic functionality of switch GPIO Interrupts.
+ * @References 1) Lecture slides of Howdy Pierce
+ *  			2) https://github.com/alexander-g-dean/ESF/tree/master/NXP
  */
 
-
+/* Header File*/
 #include "switch.h"
 
-#define SWITCH_GPIO_PORT 						GPIOD
+/* MACRO DEFS */
 #define SWITCH_PIN								3
 #define SWITCH_PIN_OFF							4
-#define SWITCH_PIN_CTRL_REG						PORTD->PCR[SWITCH_PIN] /* PORTD PCR 3*/
-#define SWITCH_SCGC5_MASK						SIM_SCGC5_PORTD_MASK
-#define SWITCH_DATA_DIR_REG 					SWITCH_GPIO_PORT->PDDR
-#define SWITCH_DATA_IN_REG						SWITCH_GPIO_PORT->PDIR
-#define SWITCH_IFSR_REG							PORTD->ISFR
 
-#define MASK(x) (1UL << (x))
-
-uint8_t switch_press_detected;
+/* Variables */
+uint8_t switch_flag;
 
 extern int while_running;
 
-acclerometer_parameters_t mma_acc = {0,0,0,0,0,0};
+acc_param_t mma_acc = {0,0,0,0,0};
 
 /**
  * @prototype : void init_switch()
@@ -34,25 +31,25 @@ acclerometer_parameters_t mma_acc = {0,0,0,0,0,0};
 void init_switch()
 {
 	/* Enable clock source to the pin */
-	SIM->SCGC5 |= SWITCH_SCGC5_MASK;
+	SIM->SCGC5 |= SIM_SCGC5_PORTD_MASK;
 
 	/* Setting up port multiplexing for GPIO */
-	SWITCH_PIN_CTRL_REG &= ~PORT_PCR_MUX_MASK;
-	SWITCH_PIN_CTRL_REG |= PORT_PCR_MUX(1);
+	PORTD->PCR[SWITCH_PIN] &= ~PORT_PCR_MUX_MASK;
+	PORTD->PCR[SWITCH_PIN] |= PORT_PCR_MUX(1);
 
 	/* Enable the pull select and pull enable */
-	SWITCH_PIN_CTRL_REG |= PORT_PCR_PE(1) | PORT_PCR_PS(1);
+	PORTD->PCR[SWITCH_PIN] |= PORT_PCR_PE(1) | PORT_PCR_PS(1);
 
 	/* Enable the interrupt on any edge */
-	SWITCH_PIN_CTRL_REG |= PORT_PCR_IRQC(10);
+	PORTD->PCR[SWITCH_PIN] |= PORT_PCR_IRQC(10);
 
 	/* Set direction to input */
-	SWITCH_DATA_DIR_REG &= ~(1 << SWITCH_PIN);
+	GPIOD->PDDR &= ~(1 << SWITCH_PIN);
 
 	/*Select GPIO and enable pull-up resistors and interrupts on falling edge*/
 	PORTD->PCR[SWITCH_PIN_OFF] = PORT_PCR_MUX(1) | PORT_PCR_PS_MASK | PORT_PCR_PE_MASK | PORT_PCR_IRQC(10);
 	/*Make pin input*/
-	PTD->PDDR &= ~MASK(SWITCH_PIN_OFF);
+	PTD->PDDR &= ~(1 << SWITCH_PIN_OFF);
 
 	/* Set the priroity of switch */
 	NVIC_EnableIRQ(PORTD_IRQn);
@@ -66,27 +63,27 @@ void init_switch()
  */
 void PORTD_IRQHandler(void)
 {
-	switch_press_detected = 0;
+	switch_flag = 0;
 
-	if ((SWITCH_IFSR_REG & (1 << SWITCH_PIN)))
+	if ((PORTD->ISFR & (1 << SWITCH_PIN)))
 	{
 		/* Debounce clearance */
-		switch_press_detected = 0;
+		switch_flag = 0;
 
-		if(	(SWITCH_DATA_IN_REG & (1 << SWITCH_PIN)) == 0)
+		if(	(GPIOD->PDIR & (1 << SWITCH_PIN)) == 0)
 		{
-			switch_press_detected = 1;
+			switch_flag = 1;
 		}
 	}
 
-	else if((SWITCH_IFSR_REG & (1 << SWITCH_PIN_OFF))){
+	else if((PORTD->ISFR & (1 << SWITCH_PIN_OFF))){
 		while_running = 0;
 		rgb_pwm_controller(0,0,0);
 	}
 
 	switch_cmd_process();
 
-	SWITCH_IFSR_REG |= (1 << SWITCH_PIN); // Clearing the switch interrupt flag
+	PORTD->ISFR |= (1 << SWITCH_PIN); // Clearing the switch interrupt flag
 }
 
 /**
@@ -103,12 +100,12 @@ void switch_cmd_process()
 	float roll = mma_acc.roll_val;
 	float pitch = mma_acc.pitch_val;
 
-	if((while_running != 1) && (switch_press_detected == 1)){
+	if((while_running != 1) && (switch_flag == 1)){
 
 		printf("\r\n Initiating Headlamp Assistance \r\n");
 		while_running = 1;
 	}
-	else if((while_running == 1) && (switch_press_detected == 1)){
+	else if((while_running == 1) && (switch_flag == 1)){
 
 		printf("THe values of ROLL and PITCH are: roll = %d, pitch = %d\r\n", (int)roll, (int)pitch);
 

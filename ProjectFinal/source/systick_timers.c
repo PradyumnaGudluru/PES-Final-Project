@@ -1,16 +1,23 @@
 /*
- * msec_timers.c
+ * systick_timers.c
  *
  *  Created on: 12-Dec-2021
  *      Author: Pradyumna
+ *
+ *@brief  Has the code for basic functionality of Systick functionality.
+ * @References 1) Lecture slides of Howdy Pierce
+ *  			2) https://github.com/alexander-g-dean/ESF/tree/master/NXP
  */
 
+/* Header File*/
 #include "MKL25Z4.h"
 #include "core_cm0plus.h"
-#include "msec_timers.h"
+#include "systick_timers.h"
 
-#define TICKS_50MSEC							(1200000)			//24 MhZ
+/* MACRO DEFS */
+#define LOAD_TICK							(1200000)			//24 MhZ
 
+/* Variables */
 ticktime_t g_tickcount = 0;
 ticktime_t g_program_start;
 ticktime_t g_timer_start;
@@ -23,7 +30,7 @@ ticktime_t g_timer_start;
  */
 static ticktime_t time_msec()
 {
-	return g_tickcount*TICK_FREQUENCY;
+	return g_tickcount*TICK_TIME;
 }
 
 /**
@@ -38,7 +45,7 @@ void init_systick()
 	SysTick->CTRL = 0;
 
 	/* The value to reload when the counter reaches 0 */
-	SysTick->LOAD = TICKS_50MSEC;
+	SysTick->LOAD = LOAD_TICK;
 
 	/* Set NVIC Priority for the timer */
 	NVIC_SetPriority(SysTick_IRQn,3);
@@ -106,5 +113,5 @@ void SysTick_Handler()
 void delay_ms(uint32_t time)
 {
   uint32_t delay_Start_tick = g_tickcount;
-  while (((g_tickcount - delay_Start_tick)*TICK_FREQUENCY) < time);
+  while (((g_tickcount - delay_Start_tick)*TICK_TIME) < time);
 }

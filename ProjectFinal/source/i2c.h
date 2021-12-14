@@ -3,6 +3,10 @@
  *
  *  Created on: 12-Dec-2021
  *      Author: Pradyumna
+ *
+ * @brief  Has the code for basic functionality of I2C with read and write functions.
+ *  @References 1) Lecture slides of Howdy Pierce
+ *  			2) https://github.com/alexander-g-dean/ESF/tree/master/NXP
  */
 
 #ifndef I2C_H_

@@ -3,28 +3,32 @@
  *
  *  Created on: 12-Dec-2021
  *      Author: Pradyumna
+ *
+ *  @brief  Has the code for Command processing of terminal interface commands and lexical analysis.
+ *  @References 1) Lecture slides of Howdy Pierce
+ *
  */
 
 
 #include "commandprocessor.h"
 
-#define NO_OF_COMMANDS 					(sizeof(commands)/sizeof(commands[0]))
+#define COMMAND_COUNT 					(sizeof(commands)/sizeof(commands[0]))
 
-static void author_command_handler(const char *datareceived);
-static void help_command_handler(const char *datareceived);
-static void unknown_command_handler(const char *datareceived);
-static void display_command_handler(const char *datareceived);
-static void initiate_command_handler(const char *datareceived);
-static void calibrate_command_handler(const char *datareceived);
+static void author_command_handler(const char *data);
+static void help_command_handler(const char *data);
+static void unknown_command_handler(const char *data);
+static void display_command_handler(const char *data);
+static void initiate_command_handler(const char *data);
+static void calibrate_command_handler(const char *data);
 
 int reference_angle = 0;
 int ref_setting_status = 0;
 float roll_calibrate, pitch_calibrate = 0;
 extern int while_running;
 
-acclerometer_parameters_t mma_acc_al = {0,0,0,0,0,0};
+acc_param_t mma_acc_al = {0,0,0,0,0};
 
-typedef void (*command_handler_t)(const char* datareceived);
+typedef void (*command_handler_t)(const char* data);
 
 typedef struct
 {
@@ -36,10 +40,10 @@ typedef struct
 static const command_table_t commands[] =
 {
 	{"author"  ,author_command_handler     ,"Print the author\r\n	 <no parameters>"									},
-	{"display" ,display_command_handler    ,"Print the roll and pitch values\r\n	 <no parameters>"					    },
+	{"display" ,display_command_handler    ,"Print the roll and pitch values\r\n	 <no parameters>"					},
 	{"help"	   ,help_command_handler	   ,"Print this help message\r\n	 <no parameters>"							},
 	{"init"	   ,initiate_command_handler	   ,"initiates the process\r\n	 <no parameters>"							},
-	{"calib"	,calibrate_command_handler	   ,"calibrates the angle roll and pitch\r\n	 <no parameters>"		},
+	{"calib"	,calibrate_command_handler	   ,"calibrates the angle roll and pitch\r\n	 <no parameters>"			},
 };
 
 /**
@@ -53,94 +57,81 @@ void lexical_analysis(uint8_t *input)
 {
 	uint8_t *p = input;
 	uint8_t *end;
-	uint8_t tempcounter = 0;
+	uint8_t temp_flag = 0;
 
-	bool spacedetected = true;
+	bool space_flag = true;
 
-	char tempbuf[200] = {0};
-	char *tempptr = tempbuf;
+	char temp_buf[200] = {0};
+	char *temp = temp_buf;
 	char commandreceived[25];
 	memset(commandreceived,'\0',sizeof(commandreceived));
 
-	/* find end of string */
 	for(end = input;*end != '\0';end++)
 	{
-		tempcounter++;
+		temp_flag++;
 	}
 
 	for(p = input; p < end;p++)
 	{
 		if((*p == ' '))
 		{
-			if(!spacedetected)
+			if(!space_flag)
 			{
-				/* inserting space only once after the
-				 * end of the string.
-				 * Extra spaces are removed.
-				 * Will be used further in sscanf to tokenize */
-				*tempptr++ = ' ';
-				/* Do nothing as space is to be ignored */
+
+				*temp++ = ' ';
+
 			}
 
-			spacedetected = true;
+			space_flag = true;
 		}
 		else
 		{
-			/* Enter when a character is detected */
-			*tempptr++ = *p;
 
-			spacedetected = false;
+			*temp++ = *p;
+
+			space_flag = false;
 		}
 	}
 
-	*tempptr++ = '\0';
+	*temp++ = '\0';
 
-	tempptr = &tempbuf[0];
+	temp = &temp_buf[0];
 
-	/* extract the first string  for command detection */
-	sscanf(&tempbuf[0],"%s",commandreceived);
+	sscanf(&temp_buf[0],"%s",commandreceived);
 
-	for(uint8_t currentcommand = 0; currentcommand < NO_OF_COMMANDS;currentcommand++)
+	for(uint8_t currentcommand = 0; currentcommand < COMMAND_COUNT;currentcommand++)
 	{
 		if(strcasecmp(commandreceived,commands[currentcommand].commandname) == 0)
 		{
-			commands[currentcommand].handlername(tempbuf);
+			commands[currentcommand].handlername(temp_buf);
 			return;
 		}
 	}
 
-	/* if the command is not recognized
-	 * call the below handler */
-	unknown_command_handler(tempbuf);
+	unknown_command_handler(temp_buf);
 	return;
 }
 
 /**
- * @prototype : static void author_command_handler(const char *datareceived)
+ * @prototype : static void author_command_handler(const char *data)
  * @brief : Prints name of the author
  * @parameters : received command
  * @return: None
  */
-static void author_command_handler(const char *datareceived)
+static void author_command_handler(const char *data)
 {
 	printf("\r\n Ram \r\n");
 }
 
 /**
- * @prototype : static void help_command_handler(const char *datareceived)
+ * @prototype : static void help_command_handler(const char *data)
  * @brief : Prints all the commands available for functioning
  * @parameters : received command
  * @return: None
  */
-static void help_command_handler(const char *datareceived)
+static void help_command_handler(const char *data)
 {
 	printf("\r\nHeadLamp Beam Assistance Feature options: \r\nOptions available \r\n");
-
-	/*for(uint8_t cmdlen = 0; cmdlen < NO_OF_COMMANDS; cmdlen++)
-	{
-		printf("%s\r\n\t %s\r\n",commands[cmdlen].commandname,
-							commands[cmdlen].commandparameters);
-	}*/
 
 	printf("Author : Display Name of Author \n\r");
 	printf("\n\r");
@@ -159,31 +150,31 @@ static void help_command_handler(const char *datareceived)
 }
 
 /**
- * @prototype : static void unknown_command_handler(const char *datareceived)
+ * @prototype : static void unknown_command_handler(const char *data)
  * @brief : Unknown command processing function
  * @parameters : received command
  * @return: None
  */
-static void unknown_command_handler(const char *datareceived)
+static void unknown_command_handler(const char *data)
 {
-	if(strcasecmp(datareceived,"\r\n") == 0)
+	if(strcasecmp(data,"\r\n") == 0)
 	{
-		/* handles the new line printing when enter key is pressed */
+
 		printf("\r\n");
 	}
 	else
 	{
-		printf("\r\nUnknown command: %s",datareceived);
+		printf("\r\nUnknown command: %s",data);
 	}
 }
 
 /**
- * @prototype : static void display_command_handler(const char *datareceived)
+ * @prototype : static void display_command_handler(const char *data)
  * @brief : Prints the roll and pitch of the sensor
  * @parameters : received command
  * @return: None
  */
-static void display_command_handler(const char *datareceived)
+static void display_command_handler(const char *data)
 {
 	read_full_xyz(&mma_acc_al);
 	convert_xyz_to_roll_pitch(&mma_acc_al, 0);
@@ -196,25 +187,12 @@ static void display_command_handler(const char *datareceived)
 }
 
 /**
- * @prototype : void set_reference_angle(int ref_rcvd )
- * @brief : Sets up the reference angle
- * @parameters : reference received angle
- * @return: None
- */
-void set_reference_angle(int ref_rcvd )
-{
-	reference_angle = ref_rcvd;
-	ref_setting_status = 1;
-}
-
-
-/**
- * @prototype : static void initiate_command_handler(const char *datareceived)
+ * @prototype : static void initiate_command_handler(const char *data)
  * @brief : Initiates the headlamp assistance feature.
  * @parameters : received command
  * @return: None
  */
-static void initiate_command_handler(const char *datareceived)
+static void initiate_command_handler(const char *data)
 {
 	if(while_running !=1){
 	printf("\r\n Initiating Headlamp Assistance \r\n");
@@ -224,12 +202,12 @@ static void initiate_command_handler(const char *datareceived)
 }
 
 /**
- * @prototype : static void calibrate_command_handler(const char *datareceived)
+ * @prototype : static void calibrate_command_handler(const char *data)
  * @brief : Calibrates the roll and pitch for the headlamp assistance feature.
  * @parameters : received command
  * @return: None
  */
-static void calibrate_command_handler(const char *datareceived)
+static void calibrate_command_handler(const char *data)
 {
 	read_full_xyz(&mma_acc_al);
 	convert_xyz_to_roll_pitch(&mma_acc_al, 0);
